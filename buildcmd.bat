@@ -1,0 +1,1 @@
+docker build images/windows/editor -t noenflux/editor:2022.2.0b8-windows-il2cpp-1.0.1 --build-arg version=2022.2.0b8 --build-arg module=windows-il2cpp

@@ -1,5 +1,7 @@
 ARG baseImage="unityci/base:windows-latest"
-ARG hubImage="unityci/hub:windows-latest"
+# ARG hubImage="unityci/hub:windows-latest"
+# Using local hub image b/c of issue with unity-hub chocolatey package
+ARG hubImage="hub"
 
 #############
 #  Builder  #
@@ -14,7 +16,7 @@ ARG version
 ARG changeSet
 RUN "C:/Program Files/Unity Hub/Unity Hub.exe" -- --headless install \
                                                --version %version% \
-                                               --changeset %changeSet% \
+                                              # --changeset %changeSet% \
                                                & if %ERRORLEVEL% EQU 1 exit 0
 
 ARG module
