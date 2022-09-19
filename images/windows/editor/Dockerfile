@@ -61,22 +61,27 @@ RUN choco install git --no-progress -y
 #=======================================================================================
 # [2019.x/2020.x/2021.x-android/2022.x-android] Support usage of installed Android SDKs outside of editor
 #=======================================================================================
+
 SHELL ["powershell", "-Command"]
-RUN $Env:UNITY_PATH="\"C:/Program Files/Unity/Hub/Editor/$Env:VERSION/\""; \
+RUN $Env:UNITY_PATH="\"C:\\Program Files\\Unity\\Hub\\Editor\\$Env:VERSION\\\""; \
+    [Environment]::SetEnvironmentVariable('UNITY_PATH',$Env:UNITY_PATH, 'Machine'); \
     Write-Host "UNITY_PATH is $Env:UNITY_PATH"; \
     $Env:RAW_ANDROID_SDK_ROOT=((Get-Content "\"$Env:UNITY_PATH/modules.json\"") -replace 'preselected','_preselected' | ConvertFrom-Json | % {$_} | Where-Object id -Match 'android-sdk-platform-tools.*' | Select-Object -ExpandProperty destination); \
     # We need to replace some characters common to paths that will break the sed expression when expanded
     $Env:ANDROID_SDK_ROOT=($Env:RAW_ANDROID_SDK_ROOT -replace '{UNITY_PATH}',"\"$Env:UNITY_PATH\"" | Convert-Path); \
+    [Environment]::SetEnvironmentVariable('ANDROID_SDK_ROOT',$Env:ANDROID_SDK_ROOT, 'Machine'); \
     Write-Host "ANDROID_SDK_ROOT is $Env:ANDROID_SDK_ROOT"; \
-    $Env:ANDROID_HOME=$Env:ANDROID_SDK_ROOT; \
-    Write-Host "ANDROID_HOME is $Env:ANDROID_HOME"; \
+    [Environment]::SetEnvironmentVariable('ANDROID_HOME',$Env:ANDROID_SDK_ROOT, 'Machine'); \
+    Write-Host "ANDROID_HOME is $Env:ANDROID_SDK_ROOT"; \
     $Env:RAW_ANDROID_NDK_HOME=((Get-Content "\"$Env:UNITY_PATH/modules.json\"") -replace 'preselected','_preselected' | ConvertFrom-Json | % {$_} | Where-Object id -Match 'android-ndk.*' | Select-Object -ExpandProperty destination); \
     $Env:ANDROID_NDK_HOME=($Env:RAW_ANDROID_NDK_HOME -replace '{UNITY_PATH}',"\"$Env:UNITY_PATH\"" | Convert-Path); \
+    [Environment]::SetEnvironmentVariable('ANDROID_NDK_HOME',$Env:ANDROID_NDK_HOME, 'Machine'); \
     Write-Host "ANDROID_NDK_HOME is $Env:ANDROID_NDK_HOME"; \
     $Env:RAW_JAVA_HOME=((Get-Content "\"$Env:UNITY_PATH/modules.json\"") -replace 'preselected','_preselected' | ConvertFrom-Json | % {$_} | Where-Object id -Match 'android-open-jdk.*' | Select-Object -ExpandProperty destination); \
     $Env:JAVA_HOME=(($Env:RAW_JAVA_HOME) -replace '{UNITY_PATH}',"\"$Env:UNITY_PATH\"" | Convert-Path); \
+    [Environment]::SetEnvironmentVariable('JAVA_HOME',$Env:JAVA_HOME, 'Machine'); \
     Write-Host "JAVA_HOME is $Env:JAVA_HOME"; \
     # Unity 2019.x doesn't have the jdk in the modules, so put in a fallback. sdkmanager will fail if invaild
-    $Env:PATH=('$Env:JAVA_HOME/bin;' + '$Env:ANDROID_SDK_ROOT/tools;' + '$Env:ANDROID_SDK_ROOT/tools/bin;' + '$Env:ANDROID_SDK_ROOT/platform-tools;' + 'C:/Program Files/Git/usr/bin' + $Env:PATH); \
+    [Environment]::SetEnvironmentVariable('PATH',("\"$Env:JAVA_HOME/bin;\"" + "\"$Env:ANDROID_SDK_ROOT/tools;\"" + "\"$Env:ANDROID_SDK_ROOT/tools/bin;\"" + "\"$Env:ANDROID_SDK_ROOT/platform-tools;\"" + 'C:/Program Files/Git/usr/bin' + $Env:PATH), 'Machine'); \
     # Accept licenses
-    for($i=0;$i -lt 30;$i++) { $response += 'y`n'}; $response | & "\"$Env:ANDROID_HOME/cmdline-tools/6.0/bin/sdkmanager.bat\"" --licenses
+    for($i=0;$i -lt 30;$i++) { $response += 'y`n'}; $response | & "\"$Env:ANDROID_SDK_ROOT/cmdline-tools/6.0/bin/sdkmanager.bat\"" --licenses
